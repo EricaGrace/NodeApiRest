@@ -1,36 +1,21 @@
-//http module is used to ake http requests
-const http = require('http');
+// create a server 
+const express = require('express');
+const { connect } = require("./db/connect.js");
+const routerUsers = require("./route/user");
+const app = express();
 
-//create a server 
-const server = http.createServer((req, res) => {
-    console.log(req);
-    //const / let
-    const { url, method } = req;
-    if (url === '/'){
-res.setHeader('content-Type', 'text/html');
-res.write('<Html>');
-res.write('<body><form action="/message"><input type="text" name ="message"> <button type="submit"> Send </button></form></body>');
-res.write('</Html>');
-res.end();
-    } 
-if (url === '/message' && method === 'POST') {
-    const body = [] ; 
-    //data event is emitted when data is received
-    req.on('data', (chunk) => {
-        console.log(chunk);
-        body.push(chunk);
-    }).on('end', () => {
-        const parseBody = Buffer.concat(body).toString();
-        console.log(oarsedBody);
-        //fs.writeAsync
-        res.statusCode = 302;
-        res.setHeader('Location', '/');
-        res.end();
-    }).on('error', (err) => {
-        console.log(err);
-    });
-}
-})
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
+app.use("/api/v1", routerUsers);
 
-server.listen(3000);
+connect("mysql://localhost:8080/", (err) => {
+  if (err) {
+    console.log("Erreur lors de la connexion à la base de données");
+    process.exit(-1);
+  } else {
+    console.log("Connexion avec la base de données établie");
+    app.listen(3000);
+    console.log("Server");
+  }
+});
